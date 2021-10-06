@@ -6,11 +6,11 @@ from termcolor import colored
 
 
 class FRAN(object):
-    def __init__(self, beseda) -> BeautifulSoup:
+    def __init__(self, beseda) -> None:
         self.beseda = beseda
         self.content = self.get_website(self.beseda)
 
-    def get_website(self, iskana_beseda):
+    def get_website(self, iskana_beseda) -> BeautifulSoup:
         """
         Ustvari bs4 instance s kontekstom.
         Url je url za fran, pri čemer ne gremo na glavno stran, ampak že v URL vpišemo besedo, katero iščemo.
@@ -24,7 +24,7 @@ class FRAN(object):
         soup = BeautifulSoup(requested_url, "lxml")
         return soup.find_all("div", attrs={"class": "entry-content"})
 
-    def print_to_terminal(self):
+    def print_to_terminal(self) -> None:
         """
         Ustvarimo while zanko, ki je pravilna, dokler ne vstavimo besede, ki obstaja. Takrat prekinemo zanko.
         Če beseda ne obstaja, pokličemo še enkrat funkcijo get_website(), ki ustvari nov request z novo besedo, ki ima vhod na Franu.
