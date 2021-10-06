@@ -4,50 +4,51 @@ import ssl
 from bs4 import BeautifulSoup
 from termcolor import colored
 
-# TODO Naredi class
 
+class FRAN(object):
+    def __init__(self, beseda) -> BeautifulSoup:
+        self.beseda = beseda
+        self.content = self.get_website(self.beseda)
 
-def get_website() -> None:
-    """
-    Ustvari bs4 instance s kontekstom.
-    Url je url za fran, pri čemer ne gremo na glavno stran, ampak že v URL vpišemo besedo, katero iščemo.
-    """
-    global content
-    context = ssl._create_unverified_context()
-    beseda = input("Vnesi besedo, katero iščeš: ")
-    url = f"https://fran.si/iskanje?View=1&Query={urllib.parse.quote(beseda)}"
+    def get_website(self, iskana_beseda):
+        """
+        Ustvari bs4 instance s kontekstom.
+        Url je url za fran, pri čemer ne gremo na glavno stran, ampak že v URL vpišemo besedo, katero iščemo.
+        """
+        context = ssl._create_unverified_context()
+        requested_url = urllib.request.urlopen(
+            f"https://fran.si/iskanje?View=1&Query={urllib.parse.quote(iskana_beseda)}",
+            context=context,
+        )
 
-    requested_url = urllib.request.urlopen(url, context=context)
-    soup = BeautifulSoup(requested_url, "lxml")
+        soup = BeautifulSoup(requested_url, "lxml")
+        return soup.find_all("div", attrs={"class": "entry-content"})
 
-    content = soup.find_all(
-        "div", attrs={"class": "entry-content"}
-    )  # entry-content so tisti deli HTML-a, ki vsebujejo besedo, katero iščemo.
+    def print_to_terminal(self):
+        """
+        Ustvarimo while zanko, ki je pravilna, dokler ne vstavimo besede, ki obstaja. Takrat prekinemo zanko.
+        Če beseda ne obstaja, pokličemo še enkrat funkcijo get_website(), ki ustvari nov request z novo besedo, ki ima vhod na Franu.
+        Da se program ne zapre takoj, pokličemo input(), da čaka na vnos uporabnika.
+        """
+        while True:
+            try:
+                for i in range(3):
+                    string = self.content[i].text
+                    string1 = colored(string.split()[0], "blue", attrs=["bold"])
+                    string2 = " ".join(string.split()[1:])
 
+                    # TODO Več line-breakov pri številkah za boljšo berljivost
+                    print(f"{string1} {string2}\n\n")
+                break
+            except:
+                print("Ta beseda ne obstaja!")
+                iskana_beseda = input("Vnesi besedo, katero iščeš: ")
+                self.content = self.get_website(iskana_beseda)
 
-def main() -> None:
-    """
-    Ustvarimo while zanko, ki je pravilna, dokler ne vstavimo besede, ki obstaja. Takrat prekinemo zanko.
-    Če beseda ne obstaja, pokličemo še enkrat funkcijo get_website(), ki ustvari nov request z novo besedo, ki ima vhod na Franu.
-    Da se program ne zapre takoj, pokličemo input(), da čaka na vnos uporabnika.
-    """
-    while True:
-        try:
-            for i in range(3):
-                string = content[i].text
-                string1 = colored(string.split()[0], "blue", attrs=["bold"])
-                string2 = " ".join(string.split()[1:])
-
-                # TODO Več line-breakov pri številkah za boljšo berljivost
-                print(f"{string1} {string2}\n\n")
-            break
-        except IndexError as e:
-            print("Ta beseda ne obstaja!")
-            get_website()
-
-    input("Pritisni ENTER za izhod")
+        input("Pritisni ENTER za izhod")
 
 
 if __name__ == "__main__":
-    get_website()
-    main()
+    beseda = input("Vnesi besedo: ")
+    fran = FRAN(beseda)
+    fran.print_to_terminal()
